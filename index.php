@@ -7,9 +7,10 @@
 
 include 'OFInterfacer.php';
 
-$interfacer = new OFInterfacer();
+/*$interfacer = new OFInterfacer();
 $interfacer->checkAllCache();
 $interfacer->processLatestData();
+ */
 
 
 ?>

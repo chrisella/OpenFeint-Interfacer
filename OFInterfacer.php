@@ -42,14 +42,29 @@ class OFInterfacer {
     var $leaderboards = array();
     
     
+    /*
+     * Returns an OFLeaderboard for the given leaderboard id
+     * @param $id The id of the leaderboard to retrieve.
+     * @return OFLeaderboard containing the leaderboard data
+     */
+    public function getLeaderboard( $id ) {
+        
+        foreach( $leaderboards as $leaderboard )
+        {
+            if( $leaderboard->id == $id )
+            {
+                return $leaderboard;
+            }
+        }
+        return null;
+    }
     
     /*
-     * Retrieves the latest data from the OpenFeint servers.
+     * Processes the cached data files.
      * This should be called explicitly when the object is created.
      * May end up moving this to the constructor so explicit calling isn't needed.
      */
-    public function processLatestData()
-    {
+    public function processLatestData() {
         $data = $this->downloadData();
         $this->processData( $data );
     }
@@ -60,8 +75,7 @@ class OFInterfacer {
      * If other pages are requested then it will currently fail until fetching 
      * of uncached pages from the server is implemented.
      */
-    public function checkAllCache()
-    {
+    public function checkAllCache() {
         global $OFIconfig;
         
         echo "Caching Results<br/><hr/>";
@@ -86,8 +100,7 @@ class OFInterfacer {
      * Checks if current local copy of xml is out of date (default: 15 mins)
      * Updates the local cache if neccessary.
      */
-    private function cacheXML( $file, $filename )
-    {
+    private function cacheXML( $file, $filename ) {
         global $OFIconfig;
         
         // If there is no cached version of gameProfile then download by default
@@ -103,13 +116,14 @@ class OFInterfacer {
             return;
         }
         echo "<br/>No need to update: " . $filename;
+        $minusTime = time() - filemtime($OFIconfig['CACHE_DIR'].$filename);
+        echo " - ".($OFIconfig['CACHE_UPDATE_TIME'] - $minusTime)." seconds until update";
     }
     
     /*
      * Copies the sourceFile to the cache
      */
-    private function copyToCache( $sourceFile, $destFile )
-    {
+    private function copyToCache( $sourceFile, $destFile ) {
         $xml = simplexml_load_file($sourceFile);
         $xml->asXML($destFile);
         echo "<br/>Copied Successfully: " . $destFile;
@@ -119,8 +133,7 @@ class OFInterfacer {
      * Loads the latest GameProfile from the cache
      * @return The latest Game Profile data, should be passed to processData
      */
-    private function downloadData()
-    {
+    private function downloadData() {
         global $OFIconfig;
         $url = $OFIconfig['CACHE_DIR'].$OFIconfig['OF_GAME_ID'].".xml";
         $xml = simplexml_load_file($url);
@@ -130,8 +143,7 @@ class OFInterfacer {
     /*
      * Processes the data retrieved from the OpenFeint servers.
      */
-    private function processData( $data )
-    {
+    private function processData( $data ) {
         global $OFIconfig;
         if( isset($data) )
         {
@@ -152,7 +164,7 @@ class OFInterfacer {
                 $leaderboard->id = $leaderboardxml->id->__toString();
                 $leaderboard->size = (int)$leaderboardxml->size;
                 
-                $highscoresxml = simplexml_load_file( $OFIconfig['CACHE_DIR']."leaderboards/".$leaderboard->id."highscores.xml" );
+                $highscoresxml = simplexml_load_file( $OFIconfig['CACHE_DIR']."leaderboards/".$leaderboard->id."/highscores.xml" );
                 
                 // Iterate Highscores and add
                 for( $hs = 0; $hs < count($highscoresxml->highscore); ++$hs )
@@ -160,13 +172,13 @@ class OFInterfacer {
                     $highscorexml = &$highscoresxml->highscore[$hs];
                     
                     $highscore = new OFHighscore();
-                    $highscore->score = (int)$highscoresxml->score;
-                    $highscore->created = $highscoresxml->created_at->__toString();
-                    $highscore->updated = $highscoresxml->updated_at->__toString();
-                    $highscore->displayText = $highscoresxml->display_text->__toString();
-                    $highscore->userName = $highscoresxml->user->name->__toString();
-                    $highscore->userProfilePic = $highscoresxml->user->profile_picture_url->__toString();
-                    $highscore->userGamerScore = (int)$highscoresxml->user->open_feint_gamer_score;
+                    $highscore->score = (int)$highscorexml->score;
+                    $highscore->created = $highscorexml->created_at->__toString();
+                    $highscore->updated = $highscorexml->updated_at->__toString();
+                    $highscore->displayText = $highscorexml->display_text->__toString();
+                    $highscore->userName = $highscorexml->user->name->__toString();
+                    $highscore->userProfilePic = $highscorexml->user->profile_picture_url->__toString();
+                    $highscore->userGamerScore = (int)$highscorexml->user->open_feint_gamer_score;
                     
                     $leaderboard->highscores[] = $highscore;
                 }

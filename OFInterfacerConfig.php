@@ -16,7 +16,7 @@
      */
     
     $OFIconfig['CACHE_DIR'] = "./xmlcache/";
-    $OFIconfig['CACHE_UPDATE_TIME'] = 15 * 60 * 1000;   // milliseconds before local cached data is out of date (default: 15 mins)
+    $OFIconfig['CACHE_UPDATE_TIME'] = 15 * 60;   // seconds before local cached data is out of date (default: 15 mins)
 
 
 ?>
